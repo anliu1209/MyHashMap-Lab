@@ -2,15 +2,17 @@ public class StateInfo{
     private String name;
     private String capitalCity;
     private int population;
+    private final DLList<String> pictureUrls = new DLList<>();
 
-    public Info(String name, String capitalCity, int population){
+    public StateInfo(String name, String capitalCity, int population){
         this.name = name;
         this.capitalCity = capitalCity;
         this.population = population;
     }
 
+    @Override
     public String toString() {
-        return name + " – Population " + population + ", Capital City " + capitalCity;
+        return name + " | Capital: " + capitalCity + " | Population: " + String.format("%,d", population);
     }
 
     public String getName() {
@@ -21,5 +23,9 @@ public class StateInfo{
     }
     public int getPopulation() {
         return population;
+    }
+
+    public DLList<String> getPictureUrls() {
+        return pictureUrls;
     }
 }

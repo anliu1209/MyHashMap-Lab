@@ -1,12 +1,19 @@
 public class State {
-    private String abbreviation;
+    private final String name;
+    private final String abbreviation;
 
-    public State(String abbreviation){
+    public State(String abbreviation) {
+        this("", abbreviation);
+    }
+
+    public State(String name, String abbreviation) {
+        this.name = name;
         this.abbreviation = abbreviation;
     }
 
+    @Override
     public String toString() {
-        return abbreviation + ": ";
+        return name.isEmpty() ? abbreviation : name + " (" + abbreviation + ")";
     }
 
     public String getAbbreviation() {

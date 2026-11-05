@@ -1,7 +1,17 @@
 public class MyHashMap<K, V> {
-    private Object[] hashArray;
+    private final Object[] hashArray;
     private int size;
-    private MyHashSet<K> keySet;
+    private final MyHashSet<K> keySet;
+
+    private static class Entry<K, V> {
+        private final K key;
+        private V value;
+
+        private Entry(K key, V value) {
+            this.key = key;
+            this.value = value;
+        }
+    }
 
     public MyHashMap() {
         hashArray = new Object[100];
@@ -9,45 +19,64 @@ public class MyHashMap<K, V> {
         keySet = new MyHashSet<>();
     }
 
-    @SuppressWarnings("unchecked")
     public V put(K key, V value) {
-        int index = key.hashCode() % hashArray.length;
-        if (index < 0) {
-            index += hashArray.length;
+        int index = bucketIndex(key);
+        DLList<Entry<K, V>> bucket = getBucket(index);
+        if (bucket == null) {
+            bucket = new DLList<>();
+            hashArray[index] = bucket;
         }
-        V previous = null;
-        if (keySet.contains(key)) {
-            previous = (V) hashArray[index];
+
+        int position = findKey(bucket, key);
+        if (position >= 0) {
+            Entry<K, V> entry = bucket.get(position);
+            V previous = entry.value;
+            entry.value = value;
+            return previous;
         }
-        if (keySet.add(key)) {
-            size++;
-        }
-        hashArray[index] = value;
-        return previous;
+
+        keySet.add(key);
+        bucket.add(new Entry<>(key, value));
+        size++;
+        return null;
     }
 
-    @SuppressWarnings("unchecked")
     public V get(Object key) {
-        int index = key.hashCode() % hashArray.length;
-        if (index < 0) {
-            index += hashArray.length;
-        }
-        return (V) hashArray[index];
+        DLList<Entry<K, V>> bucket = getBucket(bucketIndex(key));
+        int position = findKey(bucket, key);
+        return position < 0 ? null : bucket.get(position).value;
     }
 
-    @SuppressWarnings("unchecked")
     public V remove(Object key) {
-        if (!keySet.remove(key)) {
+        DLList<Entry<K, V>> bucket = getBucket(bucketIndex(key));
+        int position = findKey(bucket, key);
+        if (position < 0) {
             return null;
         }
-        int index = key.hashCode() % hashArray.length;
-        if (index < 0) {
-            index += hashArray.length;
-        }
-        V removed = (V) hashArray[index];
-        hashArray[index] = null;
+
+        keySet.remove(key);
         size--;
-        return removed;
+        return bucket.remove(position).value;
+    }
+
+    private int bucketIndex(Object key) {
+        return Math.floorMod(key.hashCode(), hashArray.length);
+    }
+
+    @SuppressWarnings("unchecked")
+    private DLList<Entry<K, V>> getBucket(int index) {
+        return (DLList<Entry<K, V>>) hashArray[index];
+    }
+
+    private int findKey(DLList<Entry<K, V>> bucket, Object key) {
+        if (bucket != null) {
+            for (int i = 0; i < bucket.size(); i++) {
+                if (key.equals(bucket.get(i).key)) {
+                    return i;
+                }
+            }
+        }
+        return -1;
     }
 
     public int size() {
