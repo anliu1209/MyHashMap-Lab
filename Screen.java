@@ -9,7 +9,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
-
+import javax.swing.JOptionPane;
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -25,6 +25,10 @@ public class Screen extends JPanel {
 
     private final MyHashMap<State, StateInfo> states = new MyHashMap<>();
     private final JTextField abbreviationField = new JTextField(4);
+    private final JTextField urlField = new JTextField(20);
+    private final JTextField nameField = new JTextField(10);
+    private final JTextField capitalField = new JTextField(10);
+    private final JTextField populationField = new JTextField(8);
     private final JLabel stateInfo = new JLabel("Try AZ, CA, or NY to view state information.");
     private final JPanel pictures = new JPanel(new GridLayout(0, 2, 12, 12));
 
@@ -40,13 +44,45 @@ public class Screen extends JPanel {
         JButton delete = new JButton("Delete State");
         delete.addActionListener(event -> deleteState());
 
-        JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JButton viewAll = new JButton("View All States");
+        viewAll.addActionListener(event -> viewAllStates());
+
+        JButton addPic = new JButton("Add Picture");
+        addPic.addActionListener(event -> addPicture());
+
+        JButton addState = new JButton("Add State");
+        addState.addActionListener(event -> addState());
+
+        // Row 1: Existing controls + View All
+        JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JLabel abbreviationLabel = new JLabel("State abbreviation");
         abbreviationLabel.setLabelFor(abbreviationField);
-        controls.add(abbreviationLabel);
-        controls.add(abbreviationField);
-        controls.add(view);
-        controls.add(delete);
+        row1.add(abbreviationLabel);
+        row1.add(abbreviationField);
+        row1.add(view);
+        row1.add(delete);
+        row1.add(viewAll);
+
+        // Row 2: Add State controls
+        JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        row2.add(new JLabel("Name:"));
+        row2.add(nameField);
+        row2.add(new JLabel("Capital:"));
+        row2.add(capitalField);
+        row2.add(new JLabel("Population:"));
+        row2.add(populationField);
+        row2.add(addState);
+
+        // Row 3: Add Picture controls
+        JPanel row3 = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        row3.add(new JLabel("Picture URL:"));
+        row3.add(urlField);
+        row3.add(addPic);
+
+        JPanel controls = new JPanel(new GridLayout(3, 1));
+        controls.add(row1);
+        controls.add(row2);
+        controls.add(row3);
 
         JPanel header = new JPanel(new BorderLayout(0, 8));
         header.add(controls, BorderLayout.NORTH);
@@ -173,5 +209,88 @@ public class Screen extends JPanel {
                 }
             }
         }.execute();
+    }
+
+    private void viewAllStates() {
+        clearPictures();
+        
+        // Assuming MyHashMap uses keySet() returning a MyHashSet
+        DLList<State> list = states.keySet().toDLList();
+        
+        if (list.size() == 0) {
+            stateInfo.setText("No states currently exist.");
+            return;
+        }
+
+        String allStates = "States: ";
+        for (int i = 0; i < list.size(); i++) {
+            allStates += list.get(i).toString();
+            if (i < list.size() - 1) {
+                allStates += ", ";
+            }
+        }
+        
+        stateInfo.setText(allStates);
+    }
+
+    private void addPicture() {
+        State key = readStateKey(); // Uses abbreviationField
+        if (key == null) {
+            return;
+        }
+
+        StateInfo info = states.get(key);
+        if (info == null) {
+            showMissingState(key);
+            return;
+        }
+
+        String url = urlField.getText().trim();
+        if (url.isEmpty()) {
+            stateInfo.setText("Enter a picture URL to add.");
+            return;
+        }
+
+        info.getPictureUrls().add(url);
+        urlField.setText(""); // Clear field after use
+        viewState(); // Refresh visual output
+        stateInfo.setText("Added picture to " + key.getAbbreviation() + ".");
+    }
+
+    private void addState() {
+        State key = readStateKey(); // Validates and gets abbreviation from abbreviationField
+        if (key == null) {
+            return;
+        }
+
+        String name = nameField.getText().trim();
+        String capital = capitalField.getText().trim();
+        String popText = populationField.getText().trim();
+
+        if (name.isEmpty() || capital.isEmpty() || popText.isEmpty()) {
+            stateInfo.setText("Enter name, capital, and population to add/update a state.");
+            return;
+        }
+
+        int population;
+        try {
+            population = Integer.parseInt(popText);
+        } catch (NumberFormatException e) {
+            stateInfo.setText("Population must be a valid number.");
+            return;
+        }
+
+        State newState = new State(name, key.getAbbreviation());
+        StateInfo newInfo = new StateInfo(name, capital, population);
+        
+        states.put(newState, newInfo);
+        
+        // Clear fields after successful addition
+        nameField.setText("");
+        capitalField.setText("");
+        populationField.setText("");
+        
+        viewState(); // Display the newly added state
+        stateInfo.setText("Added/updated state " + name + " (" + key.getAbbreviation() + ").");
     }
 }
