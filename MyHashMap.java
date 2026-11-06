@@ -37,7 +37,7 @@ public class MyHashMap<K, V> {
 
         keySet.add(key);
         bucket.add(new Entry<>(key, value));
-        size++;
+        size+=1;
         return null;
     }
 
@@ -55,7 +55,7 @@ public class MyHashMap<K, V> {
         }
 
         keySet.remove(key);
-        size--;
+        size-=1;
         return bucket.remove(position).value;
     }
 

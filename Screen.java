@@ -95,7 +95,7 @@ public class Screen extends JPanel {
         stateList.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
         results.add(new JScrollPane(stateList), "states");
         add(results, BorderLayout.CENTER);
-        add(new JLabel("Starter populations from the 2020 U.S. Census. Starter photos from the National Park Service."),
+        add(new JLabel("Starter populations from 2020 U.S. Census. Starter photos from National Park Service."),
                 BorderLayout.SOUTH);
     }
 
@@ -119,7 +119,7 @@ public class Screen extends JPanel {
     }
 
     private void addStarterState(String name, String abbreviation, String capital,
-            int population, String firstPhoto, String secondPhoto) {
+        int population, String firstPhoto, String secondPhoto) {
         StateInfo info = new StateInfo(name, capital, population);
         info.getPictureUrls().add(photoUrl(firstPhoto));
         info.getPictureUrls().add(photoUrl(secondPhoto));
@@ -164,7 +164,7 @@ public class Screen extends JPanel {
         views.show(results, "photos");
 
         DLList<String> urls = info.getPictureUrls();
-        for (int i = 0; i < urls.size(); i++) {
+        for (int i = 0; i < urls.size(); i+=1) {
             JLabel picture = new JLabel("Loading photo " + (i + 1) + "…", JLabel.CENTER);
             picture.setPreferredSize(new Dimension(350, 260));
             picture.setToolTipText(urls.get(i));
@@ -205,7 +205,7 @@ public class Screen extends JPanel {
     }
 
     private void loadPicture(String url, JLabel picture) {
-        // Load on a background thread so the window stays responsive during downloads.
+        // Load on a background thread so the window stays responsive during download
         SwingWorker<ImageIcon, Void> worker = new SwingWorker<>() {
             @Override
             protected ImageIcon doInBackground() throws IOException {
@@ -230,7 +230,7 @@ public class Screen extends JPanel {
                     picture.setIcon(get());
                     picture.setText("");
                 } catch (CancellationException exception) {
-                    // Another action has already cleared this photo.
+                    // Another action has already cleared the photo
                 } catch (ExecutionException exception) {
                     picture.setText("Photo unavailable");
                 } catch (InterruptedException exception) {
@@ -246,7 +246,7 @@ public class Screen extends JPanel {
         clearPictures();
         DLList<State> keys = states.keySet().toDLList();
         StringBuilder listing = new StringBuilder();
-        for (int i = 0; i < keys.size(); i++) {
+        for (int i = 0; i < keys.size(); i+=1) {
             listing.append(keys.get(i)).append('\n');
         }
 
@@ -318,7 +318,7 @@ public class Screen extends JPanel {
         State newState = new State(name, key.getAbbreviation());
         StateInfo newInfo = new StateInfo(name, capital, population);
 
-        // Replace both the key shown in the list and the value used for state details.
+        // Replace both the key shown in the list and the value used for state details
         boolean replaced = states.remove(newState) != null;
         states.put(newState, newInfo);
 
