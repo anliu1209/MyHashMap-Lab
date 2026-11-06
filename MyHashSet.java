@@ -55,6 +55,7 @@ public class MyHashSet<E> {
         return size;
     }
 
+    @SuppressWarnings("unchecked")
     public DLList<E> toDLList() {
         DLList<E> newList = new DLList<E>();
         for (int i = 0; i < size; i++) {
